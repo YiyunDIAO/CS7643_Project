@@ -34,7 +34,7 @@ resnet18 = torchvision.models.resnet18(pretrained = True)
 
 print(resnet18)
 
-resnet18.fc = torch.nn.Linear(in_features = 512, out_features = 3)
+resnet18.fc = torch.nn.Linear(in_features = 512, out_features = 4)
 loss_fn     = torch.nn.CrossEntropyLoss()
 optimizer   = torch.optim.Adam(resnet18.parameters(), lr = 3e-5)
 
@@ -107,6 +107,6 @@ def train(epochs, model, early_stopping_accuracy=0.8):
         print(f'Training Loss: {train_loss:.4f}')
     print('Training complete..')
 
-train(epochs=1, model = resnet18)
+#train(epochs=1, model = resnet18)
 
 show_preds(model, dl_test, test_dataset)
