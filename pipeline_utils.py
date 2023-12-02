@@ -8,7 +8,19 @@ import torch
 import os
 
 def read_data(pct_test = 0.2, root_dir = 'default'):
-    class_names = ['Normal', 'Viral_Pneumonia', 'COVID']
+    """
+    This function is used to move certain pct of pictures randomly to training folder and another pct of pictures to testing folder
+
+    :param pct_test: Pct of Pictures randomly picked as testing picture
+    :param root_dir: The root directory to pull pictures from. If it's default, it will be constructed as
+    current working directory + /COVID-19_Radiography_Dataset
+    :return: nothing will be returned. But following two folders will be constructed:
+    ../COVID-19_Radiography_Dataset/train/COVID(or Normal or Viral_Penumonia or Lung_Opacity)
+    ../COVID-19_Radiography_Dataset/test/COVID(or Normal or Viral_Penumonia or Lung_Opacity)
+    """
+
+
+    class_names = ['Normal', 'Viral_Pneumonia', 'COVID', 'Lung_Opacity']
     if root_dir == 'default':
         root_dir = os.getcwd() + '/COVID-19_Radiography_Dataset'
     else:
@@ -57,6 +69,15 @@ def read_data(pct_test = 0.2, root_dir = 'default'):
         print('path {} does not exist, remember to add underline to Viral Penumonia'.format(os.path.join(root_dir, class_names[1])))
 
 def show_images(images, labels, preds, dataset):
+    """
+    This is the helper function to show images with predicted labels
+
+    :param images: actual image png
+    :param labels: correct label for that image
+    :param preds: predicted label for the image
+    :param dataset: instance of class ChestXRayDataset, this is used to extract class labels
+    :return: None. But images will be shown
+    """
     plt.figure(figsize=(16, 9))
     class_names = dataset.class_names
     for i, image in enumerate(images):
@@ -77,6 +98,9 @@ def show_images(images, labels, preds, dataset):
     plt.show()
 
 class ChestXRayDataset(torch.utils.data.Dataset):
+    """
+    This is the class that PyTorch needs to be defined as input to the DataLoader
+    """
     def __init__(self, image_dirs, transform):
         def get_images(class_name):
             images = [x for x in os.listdir(image_dirs[class_name]) if x.lower().endswith('png')]
@@ -105,13 +129,20 @@ class ChestXRayDataset(torch.utils.data.Dataset):
 
 
 def show_preds(model, dl_test, dataset):
+    """
+    show predicted labels together with initial label
+    :param model: the trained model to be called
+    :param dl_test: DataLoader for test object
+    :param dataset: dataset that fed into show_image() function
+    :return:
+    """
     model.eval()
     images, labels = next(iter(dl_test))
     outputs  = model(images)
     _, preds = torch.max(outputs, 1)
     show_images(images, labels, preds, dataset)
 
-
+# This is the normalization that helps Resnet 18 perform better: https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html#torchvision.models.ResNet18_Weights
 def load_train_test(batch_size = 6):
     train_transform = torchvision.transforms.Compose([
         torchvision.transforms.Resize(size = (224, 224)),
@@ -129,19 +160,21 @@ def load_train_test(batch_size = 6):
     train_dirs = {
         'normal': os.getcwd() + '/COVID-19_Radiography_Dataset/train/Normal/',
         'viral': os.getcwd() + '/COVID-19_Radiography_Dataset/train/Viral_Pneumonia/',
-        'covid': os.getcwd() + '/COVID-19_Radiography_Dataset/train/COVID/'
+        'covid': os.getcwd() + '/COVID-19_Radiography_Dataset/train/COVID/',
+        'opacity': os.getcwd() + '/COVID-19_Radiography_Dataset/train/Lung_Opacity/'
     }
 
     test_dir = {
         'normal': os.getcwd() + '/COVID-19_Radiography_Dataset/test/Normal/',
         'viral': os.getcwd() + '/COVID-19_Radiography_Dataset/test/Viral_Pneumonia/',
-        'covid': os.getcwd() + '/COVID-19_Radiography_Dataset/test/COVID/'
+        'covid': os.getcwd() + '/COVID-19_Radiography_Dataset/test/COVID/',
+        'opacity': os.getcwd() + '/COVID-19_Radiography_Dataset/test/Lung_Opacity/'
     }
 
-
+    # First, two instances of ChestXRayDataset needs to be defined
     train_dataset = ChestXRayDataset(train_dirs, train_transform)
     test_dataset = ChestXRayDataset(test_dir, test_transform)
-
+    # Create two DataLoader instances. Training of PyTorch models is based on DataLoader
     dl_train = torch.utils.data.DataLoader(train_dataset, batch_size = batch_size, shuffle = True)
     dl_test = torch.utils.data.DataLoader(test_dataset, batch_size = batch_size, shuffle = True)
 
