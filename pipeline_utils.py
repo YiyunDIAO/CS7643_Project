@@ -108,7 +108,7 @@ class ChestXRayDataset(torch.utils.data.Dataset):
             return images
 
         self.images = {}
-        self.class_names = ['normal', 'viral', 'covid']
+        self.class_names = ['normal', 'viral', 'covid', 'opacity']
 
         for c in self.class_names:
             self.images[c] = get_images(c)
@@ -147,6 +147,7 @@ def load_train_test(batch_size = 6):
     train_transform = torchvision.transforms.Compose([
         torchvision.transforms.Resize(size = (224, 224)),
         torchvision.transforms.RandomHorizontalFlip(),
+        torchvision.transforms.RandomRotation(degrees=(-10, 10)),
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225])
     ])
