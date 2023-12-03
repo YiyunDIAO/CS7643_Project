@@ -107,6 +107,6 @@ def train(epochs, model, early_stopping_accuracy=0.8):
         print(f'Training Loss: {train_loss:.4f}')
     print('Training complete..')
 
-#train(epochs=1, model = resnet18)
+train(epochs=1, model = resnet18)
 
 show_preds(model, dl_test, test_dataset)
