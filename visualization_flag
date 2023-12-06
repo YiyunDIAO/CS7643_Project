@@ -1,0 +1,46 @@
+import pandas as pd
+import numpy as np
+
+prob = pd.read_csv('probabilities.csv')
+print(prob.head())
+
+
+def mark_img_to_visualize(df, threshold=0.8):
+    """
+    this function is used to bookmark apps that needs to be visualized.
+    the logic is as follows:
+    :param df: input dataframe containing the predicted probabilities for 3 classes (0 - COVID, 1 - Normal, 2 - Pneumonia)
+    :param threshold: TPR threshold used to ground probability Threshold
+    :return: same dataframe with a new column 'visualization_needed' where 1 indicates visualization needed
+    """
+
+    # first, let's make the label indicator binary
+    df['COVID_ind'] = np.where(df['Label'] == 0, 1, 0)
+    df['COVID_Prob'] = df['Class_0']
+
+    # cut the probability into 10% units
+    df['COVID_Prob_range'] = pd.cut(df['COVID_Prob'], bins=10, precision=1)
+
+    df['max_prob'] = df[['Class_0', 'Class_1', 'Class_2']].max(axis=1)
+
+    df['predicted_COVID'] = np.where(df['COVID_Prob'] == df['max_prob'], 1, 0)
+
+    df['COVID_Prediction_Accurate'] = df['predicted_COVID'] == df['COVID_ind']
+
+    accuracy_matrix = df[['COVID_Prob_range', 'COVID_ind', 'predicted_COVID', 'COVID_Prediction_Accurate']].groupby(['COVID_Prob_range']).agg({'COVID_Prediction_Accurate': 'mean',
+                                                                                                                            'COVID_ind': ['count', 'sum'],
+                                                                                                                            'predicted_COVID': ['count', 'sum']})
+
+    # we could see from the output that when COVID predicted probability is within 40% - 60%, it becomes really hard for argmax to effectively distinguish COVID
+    print(accuracy_matrix)
+    # apps that are predicted as COVID but with only 40% - 60% probability will be visualized
+    df['visualization_needed'] = np.where((df['predicted_COVID'] == 1) & (df['COVID_Prob'] >0.4) & (df['COVID_Prob'] <=0.6), 1, 0)
+
+    return df, accuracy_matrix
+
+
+visualization_list, accuracy_matrix = mark_img_to_visualize(prob)
+
+print(visualization_list[visualization_list['visualization_needed']==1])
+
+print(accuracy_matrix)
