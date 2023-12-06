@@ -5,12 +5,11 @@ prob = pd.read_csv('probabilities.csv')
 print(prob.head())
 
 
-def mark_img_to_visualize(df, threshold=0.8):
+def mark_img_to_visualize(df):
     """
     this function is used to bookmark apps that needs to be visualized.
     the logic is as follows:
     :param df: input dataframe containing the predicted probabilities for 3 classes (0 - COVID, 1 - Normal, 2 - Pneumonia)
-    :param threshold: TPR threshold used to ground probability Threshold
     :return: same dataframe with a new column 'visualization_needed' where 1 indicates visualization needed
     """
 
