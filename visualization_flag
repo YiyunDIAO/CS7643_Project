@@ -33,7 +33,7 @@ def mark_img_to_visualize(df):
     # we could see from the output that when COVID predicted probability is within 40% - 60%, it becomes really hard for argmax to effectively distinguish COVID
     print(accuracy_matrix)
     # apps that are predicted as COVID but with only 40% - 60% probability will be visualized
-    df['visualization_needed'] = np.where((df['predicted_COVID'] == 1) & (df['COVID_Prob'] >0.4) & (df['COVID_Prob'] <=0.6), 1, 0)
+    df['visualization_needed'] = np.where((df['predicted_COVID'] == 1) & (df['COVID_Prob'] >0.2) & (df['COVID_Prob'] <=0.7), 1, 0)
 
     return df, accuracy_matrix
 
